@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS nutrient_alt_measure (
   qty              NUMERIC,
   seq              INTEGER,
   serving_weight   NUMERIC,
-  PRIMARY KEY (food_id, measure, COALESCE(seq, -1))
+  PRIMARY KEY (food_id, measure, seq)
 );
 
 -- Per-food nutrient values (full_nutrients[].attr_id/value)
