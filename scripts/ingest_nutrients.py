@@ -140,7 +140,6 @@ def _row_from_food(food: Dict[str, Any]) -> Dict[str, Any]:
 
 def upsert_nutrients_batch(conn: psycopg.Connection, foods: Iterable[Dict[str, Any]]) -> List[int]:
     """
-    Upsert a /v2/natural/nutrients `foods` array.
     Returns the list of nutrient_food IDs (one per item).
     """
     ids: List[int] = []

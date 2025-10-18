@@ -12,6 +12,7 @@ load_dotenv()
 PG_URL  = os.environ["PG_URL"]
 APP_ID  = os.environ["NUTRITION_API_APP_ID"]
 APP_KEY = os.environ["NUTRITION_API_APP_KEY"]
+NUTRIENT_API_URL = os.environ['NUTRIENT_API_URL']
 
 HEADERS = {
     "x-app-id": APP_ID,
@@ -44,8 +45,7 @@ def _fetch_common_batch(conn: psycopg.Connection) -> List[Dict[str, Any]]:
         return list(cur.fetchall())
 
 def _call_natural_nutrients(query: str) -> List[Dict[str, Any]]:
-    url = "https://trackapi.nutritionix.com/v2/natural/nutrients"
-    resp = requests.post(url, headers=HEADERS, json={"query": query}, timeout=30)
+    resp = requests.post(NUTRIENT_API_URL, headers=HEADERS, json={"query": query}, timeout=30)
     resp.raise_for_status()
     return resp.json().get("foods", []) or []
 
@@ -77,7 +77,7 @@ def main():
                 query = _build_query(row)
                 try:
                     foods = _call_natural_nutrients(query)
-                    
+
                     if not foods:
                         print(f"[skip] No foods for query: {query!r}")
                         continue

@@ -9,6 +9,7 @@ load_dotenv()
 PG_URL = os.environ["PG_URL"]
 APP_ID = os.environ["NUTRITION_API_APP_ID"]
 APP_KEY = os.environ["NUTRITION_API_APP_KEY"]
+FOOD_API_URL = os.environ['FOOD_API_URL']
 
 HEADERS = {
     "x-app-id": APP_ID,
@@ -49,9 +50,8 @@ ON CONFLICT (tag_id) DO UPDATE SET
 """
 
 def fetch_instant(query: str) -> dict:
-    url = "https://trackapi.nutritionix.com/v2/search/instant"
     # Nutritionix expects query in 'query' param; adjust if your wrapper differs
-    resp = requests.get(url, headers=HEADERS, params={"query": query}, timeout=15)
+    resp = requests.get(FOOD_API_URL, headers=HEADERS, params={"query": query}, timeout=15)
     resp.raise_for_status()
     return resp.json()
 
