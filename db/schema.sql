@@ -97,3 +97,15 @@ CREATE INDEX IF NOT EXISTS idx_nutrient_food_ndb_no ON nutrient_food (ndb_no);
 
 -- Optional: JSONB index if you’ll query raw_payload
 -- CREATE INDEX IF NOT EXISTS idx_nutrient_food_raw_gin ON nutrient_food USING gin (raw_payload);
+
+-- Map a common search item (tag_id) to its canonical nutrient row(s)
+CREATE TABLE IF NOT EXISTS common_to_nutrient_map (
+  tag_id          BIGINT REFERENCES common_food(tag_id) ON DELETE CASCADE,
+  nutrient_food_id BIGINT REFERENCES nutrient_food(id) ON DELETE CASCADE,
+  -- many-to-one or one-to-many is fine; enforce uniqueness if you prefer one-to-one:
+  PRIMARY KEY (tag_id, nutrient_food_id),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Helpful uniqueness if you want at most one nutrient_food per tag_id:
+-- CREATE UNIQUE INDEX IF NOT EXISTS uq_common_to_single_nutrient ON common_to_nutrient_map(tag_id);

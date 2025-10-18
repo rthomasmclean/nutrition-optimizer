@@ -75,9 +75,9 @@ RETURNING id;
 """
 
 UPSERT_ALT_MEASURE_SQL = """
-INSERT INTO nutrient_alt_measure (food_id, measure, qty, seq, serving_weight)
-VALUES (%(food_id)s, %(measure)s, %(qty)s, %(seq)s, %(serving_weight)s)
-ON CONFLICT (food_id, measure, COALESCE(seq, -1)) DO UPDATE SET
+INSERT INTO nutrient_alt_measure (food_id, measure, qty, seq, seq_key, serving_weight)
+VALUES (%(food_id)s, %(measure)s, %(qty)s, %(seq)s, %(seq_key)s, %(serving_weight)s)
+ON CONFLICT ON CONSTRAINT nutrient_alt_measure_pkey DO UPDATE SET
   qty = EXCLUDED.qty,
   serving_weight = EXCLUDED.serving_weight;
 """
@@ -153,16 +153,19 @@ def upsert_nutrients_batch(conn: psycopg.Connection, foods: Iterable[Dict[str, A
 
             # alt_measures
             for m in (food.get("alt_measures") or []):
-                cur.execute(
-                    UPSERT_ALT_MEASURE_SQL,
-                    {
-                        "food_id": food_id,
-                        "measure": m.get("measure"),
-                        "qty": m.get("qty"),
-                        "seq": m.get("seq"),
-                        "serving_weight": m.get("serving_weight"),
-                    },
-                )
+                measure = m.get("measure")
+                if not measure:   # avoid NOT NULL violation
+                    continue
+                seq = m.get("seq")
+                params = {
+                    "food_id": food_id,
+                    "measure": measure,
+                    "qty": m.get("qty"),
+                    "seq": seq,
+                    "seq_key": (seq if seq is not None else -1),  # <-- add this
+                    "serving_weight": m.get("serving_weight"),
+                }
+                cur.execute(UPSERT_ALT_MEASURE_SQL, params)
 
             # full_nutrients
             for n in (food.get("full_nutrients") or []):
